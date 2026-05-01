@@ -33,11 +33,26 @@ async function run(){
 await client.connect();
 
 const db = client.db('habit_tracker');
-const productCollection = db.collection('habits_collection');
+const habitCollection = db.collection('habits_collection');
 const usersCollection = db.collection('users');
 
 
+app.get('/users', async(req, res)=>{
+    const cursor = usersCollection.find();
+    const result = await cursor.toArray();
+    res.send(result);
+})
 
+
+
+//HABIT RELATED API POST
+app.post('/habits_collection', async(req, res)=>{
+    const newHabit = req.body;
+    console.log('habit info', newHabit)
+    const result = await habitCollection.insertOne(newHabit);
+    console.log(result)
+    res.send(result)
+})
 
 
     await client.db("admin").command({ ping: 1 });
