@@ -45,7 +45,25 @@ app.get('/users', async(req, res)=>{
 
 
 
+app.post('/users', async(req, res)=>{
+    const newUser = req.body;
+    console.log('user info', newUser)
+    const result = await usersCollection.insertOne(newUser);
+    console.log(result);
+    res.send(result);
+
+})
+
 //HABIT RELATED API POST
+
+app.get('/habits_collection', async(req, res)=>{
+    const cursor = habitCollection.find().sort({ createAt: -1 })
+    const result = await cursor.toArray();
+    res.send(result)
+})
+
+
+
 app.post('/habits_collection', async(req, res)=>{
     const newHabit = req.body;
     console.log('habit info', newHabit)
