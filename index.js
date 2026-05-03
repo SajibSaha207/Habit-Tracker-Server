@@ -56,6 +56,14 @@ app.post('/users', async(req, res)=>{
 
 //HABIT RELATED API POST
 
+app.get('/habits_collection/:id', async(req, res)=>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id) };
+    const result = await habitCollection.findOne(query);
+    res.send(result);
+})
+
+
 app.get('/habits_collection', async(req, res)=>{
     const cursor = habitCollection.find().sort({ createAt: -1 })
     const result = await cursor.toArray();
