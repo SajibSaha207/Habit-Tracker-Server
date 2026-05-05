@@ -71,6 +71,12 @@ app.get('/habits_collection', async(req, res)=>{
 })
 
 
+app.get('/habit_collection/:email', async(req, res)=>{
+    const email = req.params.email;
+    const result = await habitCollection.find({ creatorEmail: email}).toArray();
+    res.send(result)
+})
+
 
 app.post('/habits_collection', async(req, res)=>{
     const newHabit = req.body;
