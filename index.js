@@ -63,6 +63,13 @@ app.patch('/habits_collection/:id', async(req, res)=>{
     res.send(result);
 });
 
+app.delete('/habits_collection/:id', async(req, res)=>{
+    const id = req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const result = await habitCollection.deleteOne(query)
+    res.send(result);
+})
+
 app.get('/habits_collection/:id', async(req, res)=>{
     const id = req.params.id;
     const query = {_id: new ObjectId(id) };
