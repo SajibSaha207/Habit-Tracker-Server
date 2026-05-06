@@ -56,6 +56,13 @@ app.post('/users', async(req, res)=>{
 
 //HABIT RELATED API POST
 
+app.patch('/habits_collection/:id', async(req, res)=>{
+    const id = req.params.id;
+    const updateData = req.body;
+    const result = await habitCollection.updateOne({_id: new ObjectId(id)}, { $set: updateData});
+    res.send(result);
+});
+
 app.get('/habits_collection/:id', async(req, res)=>{
     const id = req.params.id;
     const query = {_id: new ObjectId(id) };
