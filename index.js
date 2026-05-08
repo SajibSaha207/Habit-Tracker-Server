@@ -78,11 +78,29 @@ app.get('/habits_collection/:id', async(req, res)=>{
 })
 
 
+//  Single habit
+app.get('/habits_collection/detail/:id', async(req, res) => {
+    const id = req.params.id;
+    const result = await habitCollection.findOne({ _id: new ObjectId(id) });
+    res.send(result);
+})
+
+
+
+
 app.get('/habits_collection', async(req, res)=>{
     const cursor = habitCollection.find().sort({ createAt: -1 })
     const result = await cursor.toArray();
     res.send(result)
 })
+
+
+app.get('/habits_collection', async(req, res)=>{
+    const cursor = habitCollection.find() ;
+    const result = await cursor.toArray();
+    res.send(result)
+})
+
 
 
 app.get('/habit_collection/:email', async(req, res)=>{
