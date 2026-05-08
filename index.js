@@ -85,7 +85,16 @@ app.get('/habits_collection/detail/:id', async(req, res) => {
     res.send(result);
 })
 
-
+// Mark Complete 
+app.patch('/habits_collection/complete/:id', async(req, res) => {
+    const id = req.params.id;
+    const { date } = req.body;
+    const result = await habitCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $addToSet: { completionHistory: date } } 
+    );
+    res.send(result);
+})
 
 
 app.get('/habits_collection', async(req, res)=>{
