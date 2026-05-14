@@ -14,88 +14,99 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@my-app-database.mqufenv.mongodb.net/?appName=My-app-database`;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
+let client;
+let habitCollection;
+let usersCollection;
+
+async function connectDB() {
+  if (!client) {
+    client = new MongoClient(uri, {
+      serverApi: {
+        version: ServerApiVersion.v1,
+        strict: true,
+        deprecationErrors: true,
+      },
+      maxPoolSize: 1,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
   }
-});
 
-const db = client.db('habit_tracker');
-const habitCollection = db.collection('habits_collection');
-const usersCollection = db.collection('users');
+  if (!client.topology || !client.topology.isConnected()) {
+    await client.connect();
+    const db = client.db('habit_tracker');
+    habitCollection = db.collection('habits_collection');
+    usersCollection = db.collection('users');
+    console.log("MongoDB connected!");
+  }
+}
 
-// MongoDB connect
-client.connect().catch(console.error);
-
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
   res.send('Smart server is running')
 })
 
-// Users
 app.get('/users', async (req, res) => {
+  await connectDB();
   const result = await usersCollection.find().toArray();
   res.send(result);
 })
 
 app.post('/users', async (req, res) => {
-  const newUser = req.body;
-  const result = await usersCollection.insertOne(newUser);
+  await connectDB();
+  const result = await usersCollection.insertOne(req.body);
   res.send(result);
 })
 
-// Habits
 app.get('/habits_collection', async (req, res) => {
+  await connectDB();
   const sort = req.query.sort;
   const cursor = sort === 'latest'
-    ? habitCollection.find().sort({ createAt: -1 })
+    ? habitCollection.find().sort({ createdAt: -1 })
     : habitCollection.find();
   const result = await cursor.toArray();
   res.send(result);
 })
 
 app.get('/habits_collection/:id', async (req, res) => {
-  const id = req.params.id;
-  const result = await habitCollection.findOne({ _id: new ObjectId(id) });
+  await connectDB();
+  const result = await habitCollection.findOne({ _id: new ObjectId(req.params.id) });
   res.send(result);
 })
 
 app.get('/habit_collection/:email', async (req, res) => {
-  const email = req.params.email;
-  const result = await habitCollection.find({ creatorEmail: email }).toArray();
+  await connectDB();
+  const result = await habitCollection.find({ creatorEmail: req.params.email }).toArray();
   res.send(result);
 })
 
 app.post('/habits_collection', async (req, res) => {
-  const newHabit = req.body;
-  const result = await habitCollection.insertOne(newHabit);
+  await connectDB();
+  const result = await habitCollection.insertOne(req.body);
   res.send(result);
 })
 
 app.patch('/habits_collection/complete/:id', async (req, res) => {
-  const id = req.params.id;
+  await connectDB();
   const { date } = req.body;
   const result = await habitCollection.updateOne(
-    { _id: new ObjectId(id) },
+    { _id: new ObjectId(req.params.id) },
     { $addToSet: { completionHistory: date } }
   );
   res.send(result);
 })
 
 app.patch('/habits_collection/:id', async (req, res) => {
-  const id = req.params.id;
-  const updateData = req.body;
+  await connectDB();
   const result = await habitCollection.updateOne(
-    { _id: new ObjectId(id) },
-    { $set: updateData }
+    { _id: new ObjectId(req.params.id) },
+    { $set: req.body }
   );
   res.send(result);
 })
 
 app.delete('/habits_collection/:id', async (req, res) => {
-  const id = req.params.id;
-  const result = await habitCollection.deleteOne({ _id: new ObjectId(id) });
+  await connectDB();
+  const result = await habitCollection.deleteOne({ _id: new ObjectId(req.params.id) });
   res.send(result);
 })
 
